@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/gitlogs.iml" filepath="$PROJECT_DIR$/gitlogs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/changelogs.iml" filepath="$PROJECT_DIR$/.idea/changelogs.iml" />
     </modules>
   </component>
 </project>

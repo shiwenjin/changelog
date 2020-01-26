@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 )
+
 /*
 feat： 新增 feature
 fix: 修复 bug
@@ -22,97 +23,98 @@ chore: 改变构建流程、或者增加依赖库、工具等
 revert: 回滚到上一个版本
 */
 
-var keyworlds=[]string{"feat","fix","docs","style","refactor","perf","test","chore","revert"}
-var logs= make(map[string]map[string][]string)
+var keyworlds = []string{"feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "revert"}
+var logs = make(map[string]map[string][]string)
+
 func main() {
 
 	//var m map[string][]string
 	//date:keywrld:values[]
 
 	sort.Strings(keyworlds)
-	cmd := exec.Command("git","log","--date=format:'%Y-%m-%d'","--pretty=format:'@%h@%cd@%B" )
+	cmd := exec.Command("git", "log", "--date=format:'%Y-%m-%d'", "--pretty=format:'@%h@%cd@%B")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf("cmd.Run() failed with %s\n", err)
 	}
 
-	strs:=strings.Split(string(out),"\n")
+	strs := strings.Split(string(out), "\n")
 	for i := range strs {
-		if len(strs[i])<23{
+		if len(strs[i]) < 23 {
 			continue
 		}
-		if strs[i][1] !='@'{
+		if strs[i][1] != '@' {
 			continue
 		}
-		if strs[i][9] !='@'{
+		if strs[i][9] != '@' {
 			continue
 		}
-		if strs[i][22] !='@'{
+		if strs[i][22] != '@' {
 			continue
 		}
-		buildLog(strs[i][11:21],strs[i][23:])
+		buildLog(strs[i][11:21], strs[i][23:])
 	}
 	writeFile()
 }
-func buildLog(date,title string)  {
-	index,logKey:=getLogKey(title)
-	dateLogs:=logs[date]
-	if dateLogs==nil{
-		dateLogs=make(map[string][]string)
-		logs[date]=dateLogs
+func buildLog(date, title string) {
+	index, logKey := getLogKey(title)
+	dateLogs := logs[date]
+	if dateLogs == nil {
+		dateLogs = make(map[string][]string)
+		logs[date] = dateLogs
 	}
-	 logValues:=dateLogs[logKey]
-	if logValues ==nil{
-		logValues=[]string{}
+	logValues := dateLogs[logKey]
+	if logValues == nil {
+		logValues = []string{}
 	}
-	logValues=append(logValues,getLog(index,title))
-	dateLogs[logKey]=logValues
+	logValues = append(logValues, getLog(index, title))
+	dateLogs[logKey] = logValues
 }
-func getLog(sindex int,title string)string  {
-	if sindex ==-1{
+func getLog(sindex int, title string) string {
+	if sindex == -1 {
 		return title
 	}
 	return title[sindex+1:]
 }
-func getLogKey(title string) (int,string){
-	index:=strings.Index(title,":")
-	if index==-1{
-		return index,"others"
+func getLogKey(title string) (int, string) {
+	index := strings.Index(title, ":")
+	if index == -1 {
+		return index, "others"
 		//logs
 	}
-	title=title[:index]
-	for _,v :=range keyworlds {
+	title = title[:index]
+	for _, v := range keyworlds {
 		if v == title {
-			return index,v
+			return index, v
 		}
 	}
-	index=-1
-	return index,"others"
+	index = -1
+	return index, "others"
 }
-func writeFile(){
+func writeFile() {
 	filePath := "CHANGELOG.MD"
-	file, err := os.OpenFile(filePath,  os.O_RDWR | os.O_TRUNC | os. O_CREATE,0666)
+	file, err := os.OpenFile(filePath, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0666)
 	defer file.Close()
-	if err != nil{
-		fmt.Printf("%s",err)
+	if err != nil {
+		fmt.Printf("%s", err)
 	}
-	for key,value :=range logs {
-		file.WriteString("## "+key)
-		file.WriteString("\n");
-		writeKeyWorldsLogDetails(value,file)
+	for key, value := range logs {
+		file.WriteString("## " + key)
+		file.WriteString("\n")
+		writeKeyWorldsLogDetails(value, file)
 	}
 
 }
-func writeKeyWorldsLogDetails(logdetails map[string][]string,file *os.File)  {
-	for key,value :=range logdetails {
-		file.WriteString("### "+key)
+func writeKeyWorldsLogDetails(logdetails map[string][]string, file *os.File) {
+	for key, value := range logdetails {
+		file.WriteString("### " + key)
 		file.WriteString("\n")
-		writeLogDetails(value,file)
+		writeLogDetails(value, file)
 	}
 }
-func writeLogDetails(logdetails []string,file *os.File)  {
-	for _,value :=range logdetails {
-		file.WriteString("- "+value);
+func writeLogDetails(logdetails []string, file *os.File) {
+	for _, value := range logdetails {
+		file.WriteString("- " + value)
 		file.WriteString("\n")
 
 	}
