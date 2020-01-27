@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os/exec"
-	"sort"
 	"strings"
 
 	//"bytes"
@@ -23,7 +22,7 @@ chore: 改变构建流程、或者增加依赖库、工具等
 revert: 回滚到上一个版本
 */
 
-var keyworlds = []string{"feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "revert"}
+var keyworlds = []string{"feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "revert", "others"}
 var logs = make(map[string]map[string][]string)
 
 func main() {
@@ -31,7 +30,7 @@ func main() {
 	//var m map[string][]string
 	//date:keywrld:values[]
 
-	sort.Strings(keyworlds)
+	//sort.Strings(keyworlds)
 	cmd := exec.Command("git", "log", "--date=format:'%Y-%m-%d'", "--pretty=format:'@%h@%cd@%B")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -106,11 +105,23 @@ func writeFile() {
 
 }
 func writeKeyWorldsLogDetails(logdetails map[string][]string, file *os.File) {
-	for key, value := range logdetails {
-		file.WriteString("### " + key)
+	for _, keyworld := range keyworlds {
+		if len(logdetails[keyworld]) == 0 {
+			continue
+		}
+		file.WriteString("### " + keyworld)
 		file.WriteString("\n")
-		writeLogDetails(value, file)
+		writeLogDetails(logdetails[keyworld], file)
+
 	}
+	//for _, value := range logdetails {
+	//	fmt.Println(value)
+	//}
+	//for key, value := range logdetails {
+	//	file.WriteString("### " + key)
+	//	file.WriteString("\n")
+	//	writeLogDetails(value, file)
+	//}
 }
 func writeLogDetails(logdetails []string, file *os.File) {
 	for _, value := range logdetails {
