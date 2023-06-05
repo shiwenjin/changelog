@@ -1,10 +1,12 @@
 package main
 
 import (
+	"github.com/golang-module/carbon/v2"
+	"github.com/spf13/cast"
 	"log"
 	"os/exec"
+	"sort"
 	"strings"
-
 	//"bytes"
 	"fmt"
 	"os"
@@ -23,7 +25,7 @@ revert: 回滚到上一个版本
 */
 
 var keyworlds = []string{"feat", "fix", "docs", "style", "refactor", "perf", "test", "chore", "revert", "others"}
-var logs = make(map[string]map[string][]string)
+var logs = make(map[int64]map[string][]string)
 
 func main() {
 
@@ -51,11 +53,11 @@ func main() {
 		if strs[i][22] != '@' {
 			continue
 		}
-		buildLog(strs[i][11:21], strs[i][23:])
+		buildLog(carbon.Parse(strs[i][11:21]).Timestamp(), strs[i][23:])
 	}
 	writeFile()
 }
-func buildLog(date, title string) {
+func buildLog(date int64, title string) {
 	index, logKey := getLogKey(title)
 	dateLogs := logs[date]
 	if dateLogs == nil {
@@ -97,13 +99,24 @@ func writeFile() {
 	if err != nil {
 		fmt.Printf("%s", err)
 	}
-	for key, value := range logs {
-		file.WriteString("## " + key)
+
+	var keys []int
+	for k, _ := range logs {
+		keys = append(keys, cast.ToInt(k))
+	}
+	sort.Ints(keys)
+	sort.Sort(sort.Reverse(sort.IntSlice(keys)))
+
+	for i, _ := range keys {
+		key := int64(keys[i])
+		value := logs[key]
+		file.WriteString("## " + carbon.CreateFromTimestamp(key).ToDateString())
 		file.WriteString("\n")
 		writeKeyWorldsLogDetails(value, file)
 	}
 
 }
+
 func writeKeyWorldsLogDetails(logdetails map[string][]string, file *os.File) {
 	for _, keyworld := range keyworlds {
 		if len(logdetails[keyworld]) == 0 {
